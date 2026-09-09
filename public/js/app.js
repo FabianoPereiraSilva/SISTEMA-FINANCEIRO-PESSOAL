@@ -83,8 +83,7 @@ const app = {
   // ────────────── TEMA ESCURO / CLARO ──────────────
   initTheme() {
     const savedTheme = localStorage.getItem('finflow_theme');
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    this.isDarkMode = savedTheme === 'dark' || (!savedTheme && prefersDark);
+    this.isDarkMode = savedTheme === 'dark';
     this.applyTheme();
   },
 
