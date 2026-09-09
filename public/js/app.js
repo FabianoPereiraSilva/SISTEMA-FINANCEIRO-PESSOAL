@@ -96,11 +96,13 @@ const app = {
   },
 
   applyTheme() {
-    const logoSrc = this.isDarkMode ? 'icons/icon-dark.png' : 'icons/icon-light.png';
+    const symbolSrc = this.isDarkMode ? 'icons/logo-symbol-darkmode.png' : 'icons/logo-symbol-transparent.png';
+    const authLogoSrc = this.isDarkMode ? 'images/logo-horizontal-darkmode.png' : 'images/logo-horizontal-transparent.png';
+    
     const headerLogo = document.getElementById('brandLogoImg');
-    if (headerLogo) headerLogo.src = logoSrc;
+    if (headerLogo) headerLogo.src = symbolSrc;
     const authLogo = document.getElementById('authLogoImg');
-    if (authLogo) authLogo.src = logoSrc;
+    if (authLogo) authLogo.src = authLogoSrc;
 
     if (this.isDarkMode) {
       document.documentElement.setAttribute('data-theme', 'dark');
