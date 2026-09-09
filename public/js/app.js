@@ -78,6 +78,15 @@ const app = {
     }
 
     // 9. Verificar se a URL contém retorno de recuperação de senha ou link expirado
+    const isRecoveryEarly = window.__isPasswordRecovery || 
+                            sessionStorage.getItem('financeplan_recovery_mode') === 'true' ||
+                            (window.location.hash && (window.location.hash.includes('type=recovery') || window.location.hash.includes('recovery')));
+
+    const banner = document.getElementById('recoveryBanner');
+    if (isRecoveryEarly && banner) {
+      banner.style.display = 'block';
+    }
+
     if (window.location.hash) {
       const hashStr = window.location.hash.substring(1);
       const params = new URLSearchParams(hashStr);
@@ -100,13 +109,19 @@ const app = {
             }
           }
         }, 500);
-      } else if (hashStr.includes('type=recovery') || hashStr.includes('recovery')) {
+      } else if (isRecoveryEarly) {
         setTimeout(() => {
           if (window.auth && auth.openUpdatePasswordModal) {
             auth.openUpdatePasswordModal();
           }
-        }, 400);
+        }, 300);
       }
+    } else if (isRecoveryEarly) {
+      setTimeout(() => {
+        if (window.auth && auth.openUpdatePasswordModal) {
+          auth.openUpdatePasswordModal();
+        }
+      }, 300);
     }
 
     await this.checkSession();
@@ -200,6 +215,29 @@ const app = {
     const mainNav = document.getElementById('mainNav');
     const mobileBottomNav = document.getElementById('mobileBottomNav');
     const navUserArea = document.getElementById('navUserArea');
+
+    const isRecovery = window.__isPasswordRecovery || 
+                       sessionStorage.getItem('financeplan_recovery_mode') === 'true' ||
+                       (window.location.hash && (window.location.hash.includes('type=recovery') || window.location.hash.includes('recovery')));
+
+    const recoveryBanner = document.getElementById('recoveryBanner');
+    if (isRecovery && recoveryBanner) {
+      recoveryBanner.style.display = 'block';
+    }
+
+    if (isRecovery) {
+      console.log('[Recovery Mode] Usuário em fluxo de redefinição de senha');
+      authSec.style.display = 'flex';
+      dashSec.style.display = 'none';
+      mainNav.style.display = 'none';
+      if (mobileBottomNav) mobileBottomNav.style.display = 'none';
+      setTimeout(() => {
+        if (window.auth && auth.openUpdatePasswordModal) {
+          auth.openUpdatePasswordModal();
+        }
+      }, 150);
+      return;
+    }
 
     if (token && user) {
       authSec.style.display = 'none';

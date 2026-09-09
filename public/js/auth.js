@@ -333,6 +333,12 @@ const auth = {
         if (!res.ok) throw new Error(data.error || 'Erro ao atualizar senha.');
       }
 
+      // Limpar modo de recuperação
+      sessionStorage.removeItem('financeplan_recovery_mode');
+      window.__isPasswordRecovery = false;
+      const recoveryBanner = document.getElementById('recoveryBanner');
+      if (recoveryBanner) recoveryBanner.style.display = 'none';
+
       // Limpar hash da URL
       if (window.history && window.history.replaceState) {
         window.history.replaceState(null, '', window.location.pathname);

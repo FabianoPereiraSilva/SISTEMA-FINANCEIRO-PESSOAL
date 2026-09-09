@@ -39,8 +39,16 @@ app.get('/api/config', (req, res) => {
   });
 });
 
-// 2. Servir frontend estático da pasta public DEPOIS das APIs
-app.use(express.static(path.join(__dirname, 'public')));
+// 2. Servir frontend estático da pasta public DEPOIS das APIs (sem cache no desenvolvimento)
+app.use(express.static(path.join(__dirname, 'public'), {
+  etag: false,
+  maxAge: 0,
+  setHeaders: (res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  }
+}));
 
 // 3. Rota de fallback para SPA (com tratamento seguro para serverless)
 app.use((req, res, next) => {

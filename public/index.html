@@ -20,10 +20,24 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="shortcut icon" type="image/png" href="/icons/icon-192.png">
 
-  <link rel="stylesheet" href="css/steep-theme.css">
-  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/steep-theme.css?v=2.2">
+  <link rel="stylesheet" href="css/app.css?v=2.2">
   <!-- Chart.js para visualização editorial -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Capturar imediatamente fluxo de recuperação de senha do Supabase antes de qualquer biblioteca alterar o hash -->
+  <script>
+    (function() {
+      try {
+        var h = window.location.hash || '';
+        if (h.indexOf('type=recovery') !== -1 || h.indexOf('recovery') !== -1) {
+          window.__isPasswordRecovery = true;
+          sessionStorage.setItem('financeplan_recovery_mode', 'true');
+          console.log('[Head Guard] Modo de recuperação de senha identificado na URL.');
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
 
@@ -71,6 +85,16 @@
 
         <!-- Formulário de Login -->
         <form id="loginForm" class="auth-form" onsubmit="auth.handleLogin(event)">
+          <!-- Banner se houver retorno de recuperação ativo -->
+          <div id="recoveryBanner" style="display: none; padding: 14px 16px; background: rgba(33, 150, 243, 0.08); border: 1px solid rgba(33, 150, 243, 0.25); border-radius: 8px; text-align: center; margin-bottom: 12px;">
+            <p style="font-size: 13px; margin: 0 0 10px 0; color: var(--color-ink); font-weight: 500;">
+              🔑 Link de recuperação ativado!
+            </p>
+            <button type="button" class="pill-btn pill-btn-filled" style="font-size: 13px; padding: 7px 16px; width: 100%;" onclick="auth.openUpdatePasswordModal()">
+              Clique para Cadastrar Nova Senha
+            </button>
+          </div>
+
           <div>
             <label class="steep-label" for="loginEmail">E-mail</label>
             <input type="email" id="loginEmail" class="steep-input" placeholder="seu.email@exemplo.com" required autocomplete="email">
@@ -684,7 +708,7 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Supabase JS Client v2 (bundle UMD local) -->
-  <script src="js/supabase.min.js"></script>
+  <script src="js/supabase.min.js?v=2.2"></script>
   <script>
     (function() {
       var lib = window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
@@ -696,15 +720,15 @@
       }
     })();
   </script>
-  <script src="js/supabaseClient.js"></script>
+  <script src="js/supabaseClient.js?v=2.2"></script>
 
   <!-- Scripts da Aplicação -->
-  <script src="js/api.js"></script>
-  <script src="js/bankParser.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/dashboard.js"></script>
-  <script src="js/transactions.js"></script>
-  <script src="js/budgets.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/api.js?v=2.2"></script>
+  <script src="js/bankParser.js?v=2.2"></script>
+  <script src="js/auth.js?v=2.2"></script>
+  <script src="js/dashboard.js?v=2.2"></script>
+  <script src="js/transactions.js?v=2.2"></script>
+  <script src="js/budgets.js?v=2.2"></script>
+  <script src="js/app.js?v=2.2"></script>
 </body>
 </html>
