@@ -1,3 +1,5 @@
+const path = require('path');
+
 let sqlite3 = null;
 if (!process.env.VERCEL) {
   try {
