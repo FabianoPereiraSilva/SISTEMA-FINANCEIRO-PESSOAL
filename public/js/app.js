@@ -96,6 +96,12 @@ const app = {
   },
 
   applyTheme() {
+    const logoSrc = this.isDarkMode ? 'icons/icon-dark.png' : 'icons/icon-light.png';
+    const headerLogo = document.getElementById('brandLogoImg');
+    if (headerLogo) headerLogo.src = logoSrc;
+    const authLogo = document.getElementById('authLogoImg');
+    if (authLogo) authLogo.src = logoSrc;
+
     if (this.isDarkMode) {
       document.documentElement.setAttribute('data-theme', 'dark');
       const icon = document.getElementById('themeToggleIcon');
