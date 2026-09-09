@@ -77,13 +77,36 @@ const app = {
       }, false);
     }
 
-    // 9. Verificar se a URL contém retorno de recuperação de senha (Supabase Auth link)
-    if (window.location.hash && (window.location.hash.includes('type=recovery') || window.location.hash.includes('recovery'))) {
-      setTimeout(() => {
-        if (window.auth && auth.openUpdatePasswordModal) {
-          auth.openUpdatePasswordModal();
-        }
-      }, 400);
+    // 9. Verificar se a URL contém retorno de recuperação de senha ou link expirado
+    if (window.location.hash) {
+      const hashStr = window.location.hash.substring(1);
+      const params = new URLSearchParams(hashStr);
+
+      if (params.get('error_code') === 'otp_expired' || params.get('error') || hashStr.includes('otp_expired')) {
+        setTimeout(() => {
+          this.showToast('O link do e-mail expirou. Abra a mensagem mais recente no Gmail.');
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+          if (window.auth && auth.openForgotPasswordModal) {
+            auth.openForgotPasswordModal();
+            const feedback = document.getElementById('forgotPasswordFeedback');
+            if (feedback) {
+              feedback.style.display = 'block';
+              feedback.style.background = 'rgba(255, 152, 0, 0.12)';
+              feedback.style.border = '1px solid rgba(255, 152, 0, 0.3)';
+              feedback.style.color = 'var(--color-ink)';
+              feedback.innerHTML = '<strong>Link Expirado:</strong> Como foram feitas solicitações anteriores, links antigos deixam de funcionar automaticamente.<br><br>👉 No seu Gmail, abra a <strong>mensagem mais recente</strong> (no final do grupo de e-mails), ou clique no botão abaixo para gerar um novo.';
+            }
+          }
+        }, 500);
+      } else if (hashStr.includes('type=recovery') || hashStr.includes('recovery')) {
+        setTimeout(() => {
+          if (window.auth && auth.openUpdatePasswordModal) {
+            auth.openUpdatePasswordModal();
+          }
+        }, 400);
+      }
     }
 
     await this.checkSession();
