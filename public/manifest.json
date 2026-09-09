@@ -1,6 +1,6 @@
 {
-  "name": "FinFlow — Gestão Financeira Pessoal",
-  "short_name": "FinFlow",
+  "name": "Finance Plan — Gestão Financeira Pessoal",
+  "short_name": "Finance Plan",
   "description": "Sistema de gestão financeira pessoal com clareza editorial, controle de orçamentos e isolamento estrito.",
   "start_url": "/",
   "display": "standalone",

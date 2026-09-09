@@ -1,5 +1,5 @@
 /**
- * FinFlow — Leitor de Extratos Bancários (OFX e CSV)
+ * Finance Plan — Leitor de Extratos Bancários (OFX e CSV)
  * Suporta os principais bancos brasileiros: Nubank, Itaú, Inter, Bradesco, Santander, BB, C6, etc.
  */
 

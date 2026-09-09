@@ -56,7 +56,7 @@ async function startServer() {
     await initDb();
     app.listen(PORT, () => {
       console.log(`=================================================`);
-      console.log(` FinFlow — Sistema Financeiro (Estilo Steep)`);
+      console.log(` Finance Plan — Sistema Financeiro Pessoal`);
       console.log(` Servidor rodando em: http://localhost:${PORT}`);
       console.log(`=================================================`);
     });

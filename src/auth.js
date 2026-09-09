@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'finflow_steep_editorial_secret_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'finance_plan_secret_key_2026';
 const TOKEN_EXPIRY = '7d';
 
 // Cliente Supabase para verificar tokens no backend

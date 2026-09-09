@@ -1,4 +1,4 @@
-// Main Application Controller — FinFlow Pro
+// Main Application Controller — Finance Plan Pro
 const app = {
   currentTab: 'dashboard',
   currentMonth: new Date().toISOString().slice(0, 7), // 'YYYY-MM'

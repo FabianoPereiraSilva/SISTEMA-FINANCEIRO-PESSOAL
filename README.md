@@ -1,4 +1,4 @@
-# FinFlow Pro — Sistema de Gestão Financeira Pessoal
+# Finance Plan — Sistema de Gestão Financeira Pessoal
 
 > *Serif analytics on warm paper — Elegância editorial, isolamento estrito de dados e sincronização na nuvem com Supabase.*
 

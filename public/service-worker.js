@@ -1,4 +1,4 @@
-const CACHE_NAME = 'finflow-cache-v1';
+const CACHE_NAME = 'finance-plan-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

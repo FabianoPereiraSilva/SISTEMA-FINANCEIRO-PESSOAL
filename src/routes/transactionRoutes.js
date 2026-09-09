@@ -171,7 +171,7 @@ router.get('/export/csv', async (req, res) => {
 
     const csvContent = '\uFEFF' + csvLines.join('\r\n');
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename=extrato-finflow-${month || 'geral'}.csv`);
+    res.setHeader('Content-Disposition', `attachment; filename=extrato-finance-plan-${month || 'geral'}.csv`);
     return res.send(csvContent);
   } catch (err) {
     console.error('Erro na exportação CSV:', err);

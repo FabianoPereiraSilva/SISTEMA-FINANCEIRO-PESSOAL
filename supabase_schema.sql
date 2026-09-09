@@ -1,5 +1,5 @@
 -- ==============================================================================
--- FINFLOW — SCHEMA SUPABASE POSTGRESQL COM ROW LEVEL SECURITY (RLS)
+-- FINANCE PLAN — SCHEMA SUPABASE POSTGRESQL COM ROW LEVEL SECURITY (RLS)
 -- Execute este script no SQL Editor do seu projeto Supabase (painel web)
 -- ==============================================================================
 

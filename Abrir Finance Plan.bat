@@ -1,11 +1,11 @@
 @echo off
-title FinFlow — Sistema Financeiro
-color 0A
+title Finance Plan — Sistema Financeiro
+chcp 65001 > nul
+cls
 
-echo.
-echo  =========================================
-echo   FinFlow — Sistema de Gestao Financeira
-echo  =========================================
+echo ===================================================
+echo   Finance Plan — Sistema de Gestao Financeira
+echo ===================================================
 echo.
 
 :: Verificar se o servidor ja esta rodando
