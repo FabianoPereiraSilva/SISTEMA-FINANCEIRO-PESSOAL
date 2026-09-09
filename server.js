@@ -42,12 +42,24 @@ app.get('/api/config', (req, res) => {
 // 2. Servir frontend estático da pasta public DEPOIS das APIs
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 3. Rota de fallback para SPA
+// 3. Rota de fallback para SPA (com tratamento seguro para serverless)
 app.use((req, res, next) => {
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: 'Endpoint da API não encontrado.' });
   }
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const indexPath = path.join(__dirname, 'public', 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      // Se não encontrar o arquivo no filesystem do Lambda (normal no Vercel), envia 404 limpo
+      res.status(404).json({ error: 'Página estática não encontrada no servidor de aplicação.' });
+    }
+  });
+});
+
+// Middleware global de erro para evitar FUNCTION_INVOCATION_FAILED
+app.use((err, req, res, next) => {
+  console.error('[Finance Plan Error]:', err);
+  res.status(500).json({ error: 'Erro interno do servidor', message: err.message });
 });
 
 // Inicialização
