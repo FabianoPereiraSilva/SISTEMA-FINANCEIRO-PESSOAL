@@ -15,6 +15,7 @@ const app = {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js').then(reg => {
           console.log('[PWA] Service Worker registrado com sucesso:', reg.scope);
+          reg.update().catch(() => {});
         }).catch(err => {
           console.warn('[PWA] Service Worker não registrado:', err);
         });
