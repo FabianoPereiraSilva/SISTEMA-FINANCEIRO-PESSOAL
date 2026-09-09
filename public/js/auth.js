@@ -198,13 +198,5 @@ const auth = {
     api.clearAuth();
     app.showToast('Sessão encerrada com segurança.');
     app.checkSession();
-  },
-
-  fillDemo() {
-    this.switchTab('login');
-    document.getElementById('loginEmail').value = 'demo@steep.com';
-    document.getElementById('loginPassword').value = 'demo123456';
-    const fakeEvent = { preventDefault: () => {}, target: null };
-    this.handleLogin(fakeEvent);
   }
 };
