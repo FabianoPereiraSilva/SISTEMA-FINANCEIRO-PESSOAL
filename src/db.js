@@ -1,23 +1,35 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+let sqlite3;
+try {
+  sqlite3 = require('sqlite3').verbose();
+} catch (e) {
+  console.warn('[DB] SQLite3 não pôde ser carregado (ambiente serverless/Vercel):', e.message);
+}
 
+let db = null;
 const dbPath = process.env.VERCEL
   ? path.resolve('/tmp', 'database.sqlite')
   : path.resolve(__dirname, '../database.sqlite');
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Erro ao conectar ao banco de dados SQLite:', err.message);
-  } else {
-    console.log('Conectado com sucesso ao banco SQLite em:', dbPath);
+
+if (sqlite3) {
+  try {
+    db = new sqlite3.Database(dbPath, (err) => {
+      if (err) {
+        console.error('Erro ao conectar ao banco de dados SQLite:', err.message);
+      } else {
+        console.log('Conectado com sucesso ao banco SQLite em:', dbPath);
+      }
+    });
+    db.run('PRAGMA foreign_keys = OFF');
+  } catch (err) {
+    console.warn('[DB] Falha ao instanciar SQLite:', err.message);
+    db = null;
   }
-});
+}
 
-// Habilitar chaves estrangeiras
-db.run('PRAGMA foreign_keys = OFF'); // OFF para permitir migração
-
-// Promisificar métodos do SQLite
+// Promisificar métodos do SQLite com fallback seguro
 const runAsync = (sql, params = []) => {
   return new Promise((resolve, reject) => {
+    if (!db) return resolve({ id: 0, changes: 0 });
     db.run(sql, params, function (err) {
       if (err) reject(err);
       else resolve({ id: this.lastID, changes: this.changes });
@@ -27,6 +39,7 @@ const runAsync = (sql, params = []) => {
 
 const getAsync = (sql, params = []) => {
   return new Promise((resolve, reject) => {
+    if (!db) return resolve(null);
     db.get(sql, params, (err, row) => {
       if (err) reject(err);
       else resolve(row);
@@ -36,15 +49,20 @@ const getAsync = (sql, params = []) => {
 
 const allAsync = (sql, params = []) => {
   return new Promise((resolve, reject) => {
+    if (!db) return resolve([]);
     db.all(sql, params, (err, rows) => {
       if (err) reject(err);
-      else resolve(rows);
+      else resolve(rows || []);
     });
   });
 };
 
 // Inicialização dos Schemas — user_id TEXT para suportar UUIDs do Supabase
 async function initDb() {
+  if (!db) {
+    console.log('[DB] SQLite inativo ou desnecessário; operando 100% integrado ao Supabase.');
+    return;
+  }
   // Tabela de usuários locais (fallback sem Supabase)
   await runAsync(`
     CREATE TABLE IF NOT EXISTS users (

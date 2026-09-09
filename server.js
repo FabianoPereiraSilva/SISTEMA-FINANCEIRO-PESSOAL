@@ -64,6 +64,13 @@ async function startServer() {
     console.error('Falha crítica ao iniciar servidor:', err);
     process.exit(1);
   }
+}
+
+// Em ambiente Serverless (Vercel), roda initDb de forma assíncrona não bloqueante
+if (process.env.VERCEL) {
+  initDb().catch(err => console.warn('[Vercel InitDb]:', err.message));
+}
+
 if (require.main === module && !process.env.VERCEL) {
   startServer();
 }
