@@ -129,15 +129,6 @@
           </div>
           <div class="dashboard-actions">
             <input type="month" id="globalMonthPicker" class="month-selector" onchange="app.handleMonthChange(this.value)">
-            <button class="pill-btn pill-btn-ghost" onclick="transactions.openImportModal()">
-              📂 Importar Extrato
-            </button>
-            <button class="pill-btn pill-btn-ghost" onclick="transactions.exportCsv()">
-              Exportar CSV →
-            </button>
-            <button class="pill-btn pill-btn-filled" onclick="app.openTransactionModal('expense')">
-              + Nova Transação
-            </button>
           </div>
         </div>
 
@@ -257,16 +248,13 @@
           </div>
           <div class="dashboard-actions">
             <button class="pill-btn pill-btn-ghost" onclick="transactions.openImportModal()">
-              📂 Importar Extrato (OFX/CSV)
+              📂 Importar Extrato
             </button>
             <button class="pill-btn pill-btn-ghost" onclick="transactions.exportCsv()">
               Exportar CSV →
             </button>
             <button class="pill-btn pill-btn-filled" onclick="app.openTransactionModal('expense')">
-              + Nova Despesa
-            </button>
-            <button class="pill-btn pill-btn-ghost" onclick="app.openTransactionModal('income')">
-              + Nova Receita
+              + Nova Transação
             </button>
           </div>
         </div>
