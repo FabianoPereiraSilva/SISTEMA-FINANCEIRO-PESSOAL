@@ -1,8 +1,11 @@
-let sqlite3;
-try {
-  sqlite3 = require('sqlite3').verbose();
-} catch (e) {
-  console.warn('[DB] SQLite3 não pôde ser carregado (ambiente serverless/Vercel):', e.message);
+let sqlite3 = null;
+if (!process.env.VERCEL) {
+  try {
+    const pkg = 'sqlite' + '3';
+    sqlite3 = require(pkg).verbose();
+  } catch (e) {
+    console.warn('[DB] SQLite3 não pôde ser carregado:', e.message);
+  }
 }
 
 let db = null;
