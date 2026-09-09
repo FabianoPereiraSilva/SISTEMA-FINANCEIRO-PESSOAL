@@ -544,6 +544,29 @@
   font-size: 13px;
 }
 
+.auth-tab.active {
+  color: var(--color-ink);
+  font-weight: 500;
+  border-bottom: 2px solid var(--color-ink);
+}
+
+.auth-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--color-slate-gray);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition-fast);
+}
+
+.auth-link-btn:hover {
+  color: var(--color-ink);
+}
+
 .val-income {
   color: var(--color-ink-black);
   font-weight: 500;

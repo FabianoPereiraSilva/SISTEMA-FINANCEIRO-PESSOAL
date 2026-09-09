@@ -76,7 +76,12 @@
             <input type="email" id="loginEmail" class="steep-input" placeholder="seu.email@exemplo.com" required autocomplete="email">
           </div>
           <div>
-            <label class="steep-label" for="loginPassword">Senha</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="steep-label" for="loginPassword" style="margin-bottom: 0;">Senha</label>
+              <button type="button" class="auth-link-btn" onclick="auth.openForgotPasswordModal()">
+                Esqueci minha senha
+              </button>
+            </div>
             <input type="password" id="loginPassword" class="steep-input" placeholder="••••••••" required autocomplete="current-password">
           </div>
           <button type="submit" class="pill-btn pill-btn-filled" style="width: 100%; margin-top: 10px;">
@@ -585,6 +590,67 @@
         <div class="form-actions">
           <button type="button" class="pill-btn pill-btn-ghost" onclick="app.closeModal('categoryModal')">Cancelar</button>
           <button type="submit" class="pill-btn pill-btn-filled">Criar Categoria</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Esqueci Minha Senha -->
+  <div class="modal-overlay" id="forgotPasswordModal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2 class="modal-title font-serif">Recuperar <span class="serif-italic">Acesso</span></h2>
+        <button class="modal-close-btn" onclick="app.closeModal('forgotPasswordModal')">&times;</button>
+      </div>
+
+      <p style="font-size: 14px; color: var(--color-slate-gray); margin-bottom: 20px; line-height: 1.5;">
+        Informe o seu e-mail cadastrado. Enviaremos um link seguro para você redefinir sua senha com tranquilidade.
+      </p>
+
+      <form id="forgotPasswordForm" onsubmit="auth.handleForgotPassword(event)">
+        <div style="margin-bottom: 18px;">
+          <label class="steep-label" for="forgotEmail">Seu E-mail Cadastrado</label>
+          <input type="email" id="forgotEmail" class="steep-input" placeholder="seu.email@exemplo.com" required autocomplete="email">
+        </div>
+
+        <div id="forgotPasswordFeedback" style="display: none; margin-bottom: 18px; padding: 14px 16px; border-radius: 8px; font-size: 13px; line-height: 1.5;"></div>
+
+        <div class="form-actions">
+          <button type="button" class="pill-btn pill-btn-ghost" onclick="app.closeModal('forgotPasswordModal')">Cancelar</button>
+          <button type="submit" id="btnSendReset" class="pill-btn pill-btn-filled">Enviar Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Redefinir Nova Senha -->
+  <div class="modal-overlay" id="resetPasswordModal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2 class="modal-title font-serif">Criar Nova <span class="serif-italic">Senha</span></h2>
+        <button class="modal-close-btn" onclick="app.closeModal('resetPasswordModal')">&times;</button>
+      </div>
+
+      <p style="font-size: 14px; color: var(--color-slate-gray); margin-bottom: 20px; line-height: 1.5;">
+        Defina uma nova senha segura para sua conta no <strong>Finance Plan</strong>.
+      </p>
+
+      <form id="resetPasswordForm" onsubmit="auth.handleUpdatePassword(event)">
+        <div style="margin-bottom: 16px;">
+          <label class="steep-label" for="newPassword">Nova Senha</label>
+          <input type="password" id="newPassword" class="steep-input" placeholder="Mínimo de 6 caracteres" minlength="6" required autocomplete="new-password">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label class="steep-label" for="confirmNewPassword">Confirmar Nova Senha</label>
+          <input type="password" id="confirmNewPassword" class="steep-input" placeholder="Repita a nova senha" minlength="6" required autocomplete="new-password">
+        </div>
+
+        <div id="resetPasswordFeedback" style="display: none; margin-bottom: 18px; padding: 14px 16px; border-radius: 8px; font-size: 13px; line-height: 1.5;"></div>
+
+        <div class="form-actions">
+          <button type="button" class="pill-btn pill-btn-ghost" onclick="app.closeModal('resetPasswordModal')">Cancelar</button>
+          <button type="submit" id="btnSaveNewPassword" class="pill-btn pill-btn-filled">Salvar Nova Senha</button>
         </div>
       </form>
     </div>

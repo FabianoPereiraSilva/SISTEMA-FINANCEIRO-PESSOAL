@@ -198,5 +198,163 @@ const auth = {
     api.clearAuth();
     app.showToast('Sessão encerrada com segurança.');
     app.checkSession();
+  },
+
+  openForgotPasswordModal() {
+    const loginEmailInput = document.getElementById('loginEmail');
+    const forgotEmailInput = document.getElementById('forgotEmail');
+    if (loginEmailInput && forgotEmailInput && loginEmailInput.value.trim()) {
+      forgotEmailInput.value = loginEmailInput.value.trim();
+    }
+    const feedback = document.getElementById('forgotPasswordFeedback');
+    if (feedback) {
+      feedback.style.display = 'none';
+      feedback.innerHTML = '';
+    }
+    const btn = document.getElementById('btnSendReset');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Enviar Link';
+    }
+    app.openModal('forgotPasswordModal');
+  },
+
+  async handleForgotPassword(e) {
+    e.preventDefault();
+    const emailInput = document.getElementById('forgotEmail');
+    const email = emailInput ? emailInput.value.trim() : '';
+    const feedback = document.getElementById('forgotPasswordFeedback');
+    const btn = document.getElementById('btnSendReset');
+
+    if (!email) {
+      app.showToast('Informe o seu e-mail.');
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+    }
+
+    try {
+      if (window.supabaseApp && supabaseApp.isConfigured) {
+        await supabaseApp.resetPassword(email);
+      } else {
+        const res = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao solicitar redefinição.');
+      }
+
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.style.background = 'rgba(76, 175, 80, 0.12)';
+        feedback.style.border = '1px solid rgba(76, 175, 80, 0.3)';
+        feedback.style.color = 'var(--color-ink)';
+        feedback.innerHTML = `
+          <strong>✓ Instruções enviadas!</strong><br>
+          Enviamos um link de redefinição para <strong>${email}</strong>.<br>
+          Verifique sua caixa de entrada e pasta de spam. Ao clicar no link, você poderá cadastrar sua nova senha.
+        `;
+      }
+      app.showToast('Link de recuperação enviado com sucesso!');
+      if (btn) {
+        btn.textContent = 'Link Enviado ✓';
+      }
+    } catch (err) {
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.style.background = 'rgba(244, 67, 54, 0.12)';
+        feedback.style.border = '1px solid rgba(244, 67, 54, 0.3)';
+        feedback.style.color = 'var(--color-ink)';
+        feedback.innerHTML = `<strong>Atenção:</strong> ${err.message || 'Não foi possível enviar o link de recuperação.'}`;
+      }
+      app.showToast(err.message || 'Falha ao solicitar recuperação.');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Tentar Novamente';
+      }
+    }
+  },
+
+  openUpdatePasswordModal() {
+    const feedback = document.getElementById('resetPasswordFeedback');
+    if (feedback) {
+      feedback.style.display = 'none';
+      feedback.innerHTML = '';
+    }
+    const form = document.getElementById('resetPasswordForm');
+    if (form) form.reset();
+    app.openModal('resetPasswordModal');
+  },
+
+  async handleUpdatePassword(e) {
+    e.preventDefault();
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+    const feedback = document.getElementById('resetPasswordFeedback');
+    const btn = document.getElementById('btnSaveNewPassword');
+
+    if (!newPassword || newPassword.length < 6) {
+      app.showToast('A senha deve ter no mínimo 6 caracteres.');
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      app.showToast('As senhas digitadas não coincidem.');
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.style.background = 'rgba(244, 67, 54, 0.12)';
+        feedback.style.border = '1px solid rgba(244, 67, 54, 0.3)';
+        feedback.style.color = 'var(--color-ink)';
+        feedback.innerHTML = '<strong>Atenção:</strong> As duas senhas devem ser exatamente iguais.';
+      }
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Salvando nova senha...';
+    }
+
+    try {
+      if (window.supabaseApp && supabaseApp.isConfigured) {
+        await supabaseApp.updatePassword(newPassword);
+      } else {
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newPassword })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao atualizar senha.');
+      }
+
+      // Limpar hash da URL
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+
+      app.closeModal('resetPasswordModal');
+      app.showToast('Senha atualizada com sucesso! Bem-vindo de volta.');
+      await app.checkSession();
+    } catch (err) {
+      if (feedback) {
+        feedback.style.display = 'block';
+        feedback.style.background = 'rgba(244, 67, 54, 0.12)';
+        feedback.style.border = '1px solid rgba(244, 67, 54, 0.3)';
+        feedback.style.color = 'var(--color-ink)';
+        feedback.innerHTML = `<strong>Erro:</strong> ${err.message || 'Não foi possível atualizar a senha.'}`;
+      }
+      app.showToast(err.message || 'Falha ao redefinir senha.');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Salvar Nova Senha';
+      }
+    }
   }
 };

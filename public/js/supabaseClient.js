@@ -16,6 +16,16 @@ const supabaseApp = {
         this.client = createClientFn(config.supabaseUrl, config.supabaseAnonKey);
         this.isConfigured = true;
         console.log('✓ Supabase Client inicializado com sucesso.');
+
+        // Escutar recuperação de senha e eventos de auth
+        this.client.auth.onAuthStateChange(async (event, session) => {
+          if (event === 'PASSWORD_RECOVERY') {
+            console.log('Evento Supabase PASSWORD_RECOVERY capturado.');
+            if (window.auth && auth.openUpdatePasswordModal) {
+              auth.openUpdatePasswordModal();
+            }
+          }
+        });
       } else {
         console.warn('Supabase não pôde ser inicializado:', {
           hasUrl: !!config.supabaseUrl,
@@ -52,6 +62,25 @@ const supabaseApp = {
       password
     });
 
+    if (error) throw error;
+    return data;
+  },
+
+  async resetPassword(email) {
+    if (!this.isConfigured) throw new Error('Supabase não inicializado.');
+    const redirectTo = window.location.origin;
+    const { data, error } = await this.client.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectTo
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  async updatePassword(newPassword) {
+    if (!this.isConfigured) throw new Error('Supabase não inicializado.');
+    const { data, error } = await this.client.auth.updateUser({
+      password: newPassword
+    });
     if (error) throw error;
     return data;
   },

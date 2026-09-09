@@ -75,6 +75,13 @@ const app = {
       dropzone.addEventListener('drop', (e) => {
         transactions.handleFileDrop(e);
       }, false);
+    // 9. Verificar se a URL contém retorno de recuperação de senha (Supabase Auth link)
+    if (window.location.hash && (window.location.hash.includes('type=recovery') || window.location.hash.includes('recovery'))) {
+      setTimeout(() => {
+        if (window.auth && auth.openUpdatePasswordModal) {
+          auth.openUpdatePasswordModal();
+        }
+      }, 400);
     }
 
     await this.checkSession();

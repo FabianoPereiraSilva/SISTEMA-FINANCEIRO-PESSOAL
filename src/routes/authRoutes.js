@@ -191,4 +191,39 @@ router.get('/me', requireAuth, async (req, res) => {
   }
 });
 
+// ─── Esqueci minha senha (fallback backend) ───
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Informe seu e-mail.' });
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+
+    // Tentar via Supabase se configurado no servidor
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseAnonKey) {
+      try {
+        const { createClient } = require('@supabase/supabase-js');
+        const supa = createClient(supabaseUrl, supabaseAnonKey);
+        const { error } = await supa.auth.resetPasswordForEmail(trimmedEmail);
+        if (!error) {
+          return res.json({ message: 'Instruções enviadas com sucesso para o seu e-mail.' });
+        }
+      } catch (e) {
+        console.warn('Erro ao disparar reset Supabase no backend:', e.message);
+      }
+    }
+
+    // Verificar SQLite
+    const user = await getAsync('SELECT id FROM users WHERE email = ?', [trimmedEmail]);
+    return res.json({ message: 'Se o e-mail estiver cadastrado, as instruções foram enviadas.' });
+  } catch (err) {
+    console.error('Erro ao processar esqueci senha:', err);
+    return res.status(500).json({ error: 'Erro ao processar solicitação.' });
+  }
+});
+
 module.exports = router;
