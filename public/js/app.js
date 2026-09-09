@@ -235,7 +235,7 @@ const app = {
         if (window.auth && auth.openUpdatePasswordModal) {
           auth.openUpdatePasswordModal();
         }
-      }, 150);
+      }, 350);
       return;
     }
 
