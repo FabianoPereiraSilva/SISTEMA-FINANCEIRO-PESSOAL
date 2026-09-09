@@ -67,8 +67,14 @@ const supabaseApp = {
   },
 
   async resetPassword(email) {
-    if (!this.isConfigured) throw new Error('Supabase não inicializado.');
-    const redirectTo = window.location.origin;
+    if (!this.client) {
+      await this.init();
+    }
+    if (!this.client) throw new Error('Supabase não inicializado.');
+
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const redirectTo = isLocal ? window.location.origin : 'https://financeplan-sigma.vercel.app';
+
     const { data, error } = await this.client.auth.resetPasswordForEmail(email, {
       redirectTo: redirectTo
     });
@@ -77,7 +83,28 @@ const supabaseApp = {
   },
 
   async updatePassword(newPassword) {
-    if (!this.isConfigured) throw new Error('Supabase não inicializado.');
+    if (!this.client) {
+      await this.init();
+    }
+    if (!this.client) throw new Error('Supabase não inicializado.');
+
+    // Injeta o access_token do hash se existir para reestabelecer a sessão
+    try {
+      const hashStr = (window.location.hash || '').substring(1);
+      const hashParams = new URLSearchParams(hashStr);
+      const token = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+
+      if (token) {
+        await this.client.auth.setSession({
+          access_token: token,
+          refresh_token: refreshToken || ''
+        });
+      }
+    } catch (e) {
+      console.warn('Sessão mantida:', e);
+    }
+
     const { data, error } = await this.client.auth.updateUser({
       password: newPassword
     });

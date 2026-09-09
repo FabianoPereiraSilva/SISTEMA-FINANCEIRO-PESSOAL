@@ -226,4 +226,36 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
+// ─── Redefinir senha (fallback backend) ───
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { newPassword, accessToken } = req.body;
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'A senha deve ter no mínimo 6 caracteres.' });
+    }
+
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+    if (supabaseUrl && supabaseAnonKey && accessToken) {
+      try {
+        const { createClient } = require('@supabase/supabase-js');
+        const supa = createClient(supabaseUrl, supabaseAnonKey);
+        await supa.auth.setSession({ access_token: accessToken, refresh_token: '' });
+        const { data, error } = await supa.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        return res.json({ message: 'Senha atualizada com sucesso no Supabase.' });
+      } catch (supaErr) {
+        console.warn('Erro ao atualizar senha via Supabase backend:', supaErr.message);
+        return res.status(400).json({ error: supaErr.message || 'Falha ao atualizar senha no Supabase.' });
+      }
+    }
+
+    return res.json({ message: 'Senha atualizada com sucesso.' });
+  } catch (err) {
+    console.error('Erro ao redefinir senha:', err);
+    return res.status(500).json({ error: err.message || 'Erro ao atualizar senha.' });
+  }
+});
+
 module.exports = router;

@@ -321,16 +321,35 @@ const auth = {
     }
 
     try {
-      if (window.supabaseApp && supabaseApp.isConfigured) {
-        await supabaseApp.updatePassword(newPassword);
-      } else {
+      const hashStr = (window.location.hash || '').substring(1);
+      const hashParams = new URLSearchParams(hashStr);
+      const token = hashParams.get('access_token');
+
+      let updated = false;
+      let lastError = null;
+
+      // 1. Tentar diretamente pelo client Supabase no frontend
+      if (window.supabaseApp) {
+        try {
+          await supabaseApp.updatePassword(newPassword);
+          updated = true;
+        } catch (clientErr) {
+          console.warn('Falha client Supabase:', clientErr.message);
+          lastError = clientErr.message;
+        }
+      }
+
+      // 2. Se não atualizou pelo client, chamar endpoint backend passando o token de acesso
+      if (!updated) {
         const res = await fetch('/api/auth/reset-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ newPassword })
+          body: JSON.stringify({ newPassword, accessToken: token })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erro ao atualizar senha.');
+        if (!res.ok) {
+          throw new Error(data.error || lastError || 'Erro ao atualizar senha.');
+        }
       }
 
       // Limpar modo de recuperação
