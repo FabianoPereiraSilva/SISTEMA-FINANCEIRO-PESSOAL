@@ -1,0 +1,30 @@
+{
+  "name": "FinFlow — Gestão Financeira Pessoal",
+  "short_name": "FinFlow",
+  "description": "Sistema de gestão financeira pessoal com clareza editorial, controle de orçamentos e isolamento estrito.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fbf9f4",
+  "theme_color": "#17191c",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+# Dependências
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Variáveis de ambiente sensíveis (NUNCA subir para o GitHub)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Banco de dados local de desenvolvimento
+database.sqlite
+database.sqlite-journal
+*.sqlite
+*.sqlite3
+
+# Vercel
+.vercel/
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & Scripts temporários
+*.log
+scratch/
+test_*.js
