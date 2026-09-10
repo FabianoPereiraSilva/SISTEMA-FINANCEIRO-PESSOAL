@@ -125,7 +125,16 @@ const app = {
       }, 300);
     }
 
+    // Mostrar loading overlay enquanto verifica sessão
+    const loadingOverlay = document.getElementById('appLoadingOverlay');
+
     await this.checkSession();
+
+    // Remover loading overlay após verificar sessão
+    if (loadingOverlay) {
+      loadingOverlay.classList.add('hidden');
+      setTimeout(() => loadingOverlay.remove(), 350);
+    }
   },
 
   // ────────────── TEMA ESCURO / CLARO ──────────────
@@ -228,10 +237,13 @@ const app = {
 
     if (isRecovery) {
       console.log('[Recovery Mode] Usuário em fluxo de redefinição de senha');
+      document.body.classList.remove('app-authenticated');
       authSec.style.display = 'flex';
       dashSec.style.display = 'none';
       mainNav.style.display = 'none';
       if (mobileBottomNav) mobileBottomNav.style.display = 'none';
+      const mobileFab = document.getElementById('mobileFab');
+      if (mobileFab) mobileFab.style.display = 'none';
       setTimeout(() => {
         if (window.auth && auth.openUpdatePasswordModal) {
           auth.openUpdatePasswordModal();
@@ -241,10 +253,14 @@ const app = {
     }
 
     if (token && user) {
+      document.body.classList.add('app-authenticated');
       authSec.style.display = 'none';
       dashSec.style.display = 'block';
       mainNav.style.display = 'flex';
-      if (mobileBottomNav) mobileBottomNav.style.display = 'flex';
+      // mobile-bottom-nav e mobile-fab visíveis via classe CSS body.app-authenticated
+      if (mobileBottomNav) mobileBottomNav.style.removeProperty('display');
+      const mobileFab = document.getElementById('mobileFab');
+      if (mobileFab) mobileFab.style.removeProperty('display');
 
       const initials = user.name
         .split(' ')
@@ -272,10 +288,14 @@ const app = {
       document.getElementById('userGreeting').textContent = user.name.split(' ')[0];
       this.loadActiveTab();
     } else {
+      document.body.classList.remove('app-authenticated');
       authSec.style.display = 'flex';
       dashSec.style.display = 'none';
       mainNav.style.display = 'none';
-      if (mobileBottomNav) mobileBottomNav.style.display = 'none';
+      // Esconder mobile nav explicitamente na saída
+      if (mobileBottomNav) { mobileBottomNav.style.display = 'none'; }
+      const mobileFab = document.getElementById('mobileFab');
+      if (mobileFab) mobileFab.style.display = 'none';
 
       navUserArea.innerHTML = `
         <button class="header-action-btn" onclick="app.toggleTheme()" title="Alternar Tema" style="margin-right: 8px;">

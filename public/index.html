@@ -20,8 +20,8 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="shortcut icon" type="image/png" href="/icons/icon-192.png">
 
-  <link rel="stylesheet" href="css/steep-theme.css?v=2.2">
-  <link rel="stylesheet" href="css/app.css?v=2.2">
+  <link rel="stylesheet" href="css/steep-theme.css?v=2.4">
+  <link rel="stylesheet" href="css/app.css?v=2.4">
   <!-- Chart.js para visualização editorial -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -49,6 +49,11 @@
   </script>
 </head>
 <body>
+
+  <!-- Loading Overlay: visível até a sessão ser verificada -->
+  <div class="app-loading-overlay" id="appLoadingOverlay">
+    <div class="app-spinner"></div>
+  </div>
 
   <!-- Top Navigation — Whisper Quiet -->
   <header class="site-header">
@@ -690,11 +695,11 @@
   </div>
 
   <!-- ==================== MOBILE PWA: BOTTOM NAV & FAB ==================== -->
-  <button class="mobile-fab" id="mobileFab" onclick="app.openTransactionModal('expense')" title="Adicionar Transação">
+  <button class="mobile-fab" id="mobileFab" onclick="app.openTransactionModal('expense')" title="Adicionar Transação" style="display: none;">
     +
   </button>
 
-  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+  <nav class="mobile-bottom-nav" id="mobileBottomNav" style="display: none;">
     <button class="mobile-nav-item active" data-tab="dashboard" onclick="app.navigate('dashboard')">
       <span class="mobile-nav-icon">📊</span>
       <span>Visão Geral</span>
@@ -717,7 +722,7 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Supabase JS Client v2 (bundle UMD local) -->
-  <script src="js/supabase.min.js?v=2.3"></script>
+  <script src="js/supabase.min.js?v=2.4"></script>
   <script>
     (function() {
       var lib = window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
@@ -729,15 +734,15 @@
       }
     })();
   </script>
-  <script src="js/supabaseClient.js?v=2.3"></script>
+  <script src="js/supabaseClient.js?v=2.4"></script>
 
   <!-- Scripts da Aplicação -->
-  <script src="js/api.js?v=2.3"></script>
-  <script src="js/bankParser.js?v=2.3"></script>
-  <script src="js/auth.js?v=2.3"></script>
-  <script src="js/dashboard.js?v=2.3"></script>
-  <script src="js/transactions.js?v=2.3"></script>
-  <script src="js/budgets.js?v=2.3"></script>
-  <script src="js/app.js?v=2.3"></script>
+  <script src="js/api.js?v=2.4"></script>
+  <script src="js/bankParser.js?v=2.4"></script>
+  <script src="js/auth.js?v=2.4"></script>
+  <script src="js/dashboard.js?v=2.4"></script>
+  <script src="js/transactions.js?v=2.4"></script>
+  <script src="js/budgets.js?v=2.4"></script>
+  <script src="js/app.js?v=2.4"></script>
 </body>
 </html>
