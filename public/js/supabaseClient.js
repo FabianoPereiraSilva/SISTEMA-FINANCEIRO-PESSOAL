@@ -102,25 +102,40 @@ const supabaseApp = {
       console.warn('Falha ao carregar config:', e);
     }
 
-    // 3. Se temos o token de autorização e as chaves, chamar diretamente a API REST do Supabase (livre de AuthSessionMissingError)
+    // 3. Chamar diretamente a API REST oficial do Supabase (/auth/v1/user) com o Bearer token
     if (token && url && key) {
       console.log('[Supabase Auth] Atualizando senha via API REST oficial...');
-      const response = await fetch(`${url}/auth/v1/user`, {
-        method: 'PUT',
-        headers: {
-          'apikey': key,
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ password: newPassword })
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.msg || data.error_description || data.error || 'Erro ao atualizar senha no Supabase.');
+      let response;
+      try {
+        response = await fetch(`${url}/auth/v1/user`, {
+          method: 'PUT',
+          headers: {
+            'apikey': key,
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ password: newPassword })
+        });
+      } catch (fetchErr) {
+        throw new Error('Falha de conexão com o servidor de autenticação: ' + fetchErr.message);
       }
 
-      console.log('[Supabase Auth] ✓ Senha atualizada com sucesso via REST API!');
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Erros: 403 bad_jwt (token expirado), 422 (senha fraca), etc.
+        const errorMsg = data.msg || data.error_description || data.error || 'Erro ao atualizar senha no Supabase.';
+        console.error('[Supabase Auth] Erro HTTP', response.status, ':', errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      // Supabase retorna dados do usuário (id, email) quando o update é bem-sucedido
+      if (!data.id && !data.email) {
+        console.error('[Supabase Auth] Resposta inesperada (sem id ou email):', data);
+        throw new Error('Token de recuperação inválido ou expirado. Solicite um novo link pelo e-mail.');
+      }
+
+      console.log('[Supabase Auth] ✓ Senha atualizada com sucesso! Usuário:', data.email);
       return data;
     }
 

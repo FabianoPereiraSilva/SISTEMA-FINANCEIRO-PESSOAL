@@ -234,33 +234,52 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'A senha deve ter no mínimo 6 caracteres.' });
     }
 
+    // Sem accessToken não é possível atualizar a senha no Supabase
+    if (!accessToken) {
+      return res.status(400).json({
+        error: 'Token de recuperação não encontrado. Por favor, use o link do e-mail novamente.'
+      });
+    }
+
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-    if (supabaseUrl && supabaseAnonKey && accessToken) {
-      try {
-        const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
-          method: 'PUT',
-          headers: {
-            'apikey': supabaseAnonKey,
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ password: newPassword })
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.msg || data.error_description || data.error || 'Erro ao atualizar senha.');
-        }
-        return res.json({ message: 'Senha atualizada com sucesso no Supabase.' });
-      } catch (supaErr) {
-        console.warn('Erro ao atualizar senha via Supabase backend:', supaErr.message);
-        return res.status(400).json({ error: supaErr.message || 'Falha ao atualizar senha no Supabase.' });
-      }
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return res.status(500).json({ error: 'Serviço de autenticação não configurado no servidor.' });
     }
 
-    return res.json({ message: 'Senha atualizada com sucesso.' });
+    try {
+      const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+        method: 'PUT',
+        headers: {
+          'apikey': supabaseAnonKey,
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ password: newPassword })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        // Erros comuns: token expirado (bad_jwt), token já usado, etc.
+        const errorMsg = data.msg || data.error_description || data.error || 'Erro ao atualizar senha.';
+        console.warn('[reset-password] Supabase retornou erro:', response.status, errorMsg);
+        return res.status(400).json({ error: errorMsg });
+      }
+
+      // Verificar se o Supabase realmente retornou dados de usuário (indica sucesso real)
+      if (!data.id && !data.email) {
+        return res.status(400).json({
+          error: 'Token de recuperação inválido ou expirado. Solicite um novo link de recuperação.'
+        });
+      }
+
+      console.log('[reset-password] Senha atualizada para:', data.email);
+      return res.json({ message: 'Senha atualizada com sucesso no Supabase.' });
+    } catch (supaErr) {
+      console.warn('Erro ao atualizar senha via Supabase backend:', supaErr.message);
+      return res.status(400).json({ error: supaErr.message || 'Falha ao atualizar senha no Supabase.' });
+    }
   } catch (err) {
     console.error('Erro ao redefinir senha:', err);
     return res.status(500).json({ error: err.message || 'Erro ao atualizar senha.' });

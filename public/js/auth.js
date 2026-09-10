@@ -321,14 +321,16 @@ const auth = {
     }
 
     try {
-      const hashStr = (window.location.hash || '').substring(1);
-      const hashParams = new URLSearchParams(hashStr);
-      const token = window.__recoveryToken || sessionStorage.getItem('financeplan_recovery_token') || hashParams.get('access_token');
+      const token = window.__recoveryToken || sessionStorage.getItem('financeplan_recovery_token');
+
+      if (!token) {
+        throw new Error('Token de recuperação não encontrado. Por favor, use o link do e-mail novamente.');
+      }
 
       let updated = false;
       let lastError = null;
 
-      // 1. Tentar diretamente pelo client Supabase no frontend
+      // 1. Tentar diretamente pelo client Supabase no frontend (REST API direto)
       if (window.supabaseApp) {
         try {
           await supabaseApp.updatePassword(newPassword);
@@ -336,6 +338,11 @@ const auth = {
         } catch (clientErr) {
           console.warn('Falha client Supabase:', clientErr.message);
           lastError = clientErr.message;
+          // Se o token expirou, não tenta o fallback — só vai falhar também
+          const msg = clientErr.message.toLowerCase();
+          if (msg.includes('jwt expired') || msg.includes('bad_jwt') || msg.includes('invalid jwt') || msg.includes('token') || msg.includes('expirado')) {
+            throw new Error('O link de recuperação expirou. Por favor, solicite um novo link clicando em "Esqueci minha senha".');
+          }
         }
       }
 
@@ -352,9 +359,11 @@ const auth = {
         }
       }
 
-      // Limpar modo de recuperação
+      // Limpar tokens de recuperação após sucesso
       sessionStorage.removeItem('financeplan_recovery_mode');
+      sessionStorage.removeItem('financeplan_recovery_token');
       window.__isPasswordRecovery = false;
+      window.__recoveryToken = null;
       const recoveryBanner = document.getElementById('recoveryBanner');
       if (recoveryBanner) recoveryBanner.style.display = 'none';
 
@@ -364,15 +373,30 @@ const auth = {
       }
 
       app.closeModal('resetPasswordModal');
-      app.showToast('Senha atualizada com sucesso! Bem-vindo de volta.');
-      await app.checkSession();
+      app.showToast('✅ Senha atualizada! Faça login com sua nova senha.');
+      // Não faz checkSession pois a sessão de recovery não é de login normal
+      // Redireciona para a tela de login para o usuário entrar com a nova senha
+      auth.switchTab('login');
     } catch (err) {
       if (feedback) {
         feedback.style.display = 'block';
         feedback.style.background = 'rgba(244, 67, 54, 0.12)';
         feedback.style.border = '1px solid rgba(244, 67, 54, 0.3)';
         feedback.style.color = 'var(--color-ink)';
-        feedback.innerHTML = `<strong>Erro:</strong> ${err.message || 'Não foi possível atualizar a senha.'}`;
+        // Mensagem especial para link expirado com botão de ação
+        const isExpired = (err.message || '').toLowerCase().includes('expirou') || (err.message || '').toLowerCase().includes('expirado') || (err.message || '').toLowerCase().includes('token');
+        if (isExpired) {
+          feedback.innerHTML = `
+            <strong>⏱ Link Expirado</strong><br>
+            ${err.message}<br><br>
+            <button type="button" onclick="app.closeModal('resetPasswordModal'); auth.openForgotPasswordModal();" 
+              style="background: var(--color-ink-black); color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; width: 100%;">
+              Solicitar Novo Link
+            </button>
+          `;
+        } else {
+          feedback.innerHTML = `<strong>Erro:</strong> ${err.message || 'Não foi possível atualizar a senha.'}`;
+        }
       }
       app.showToast(err.message || 'Falha ao redefinir senha.');
     } finally {
