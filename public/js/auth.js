@@ -330,33 +330,47 @@ const auth = {
       let updated = false;
       let lastError = null;
 
-      // 1. Tentar diretamente pelo client Supabase no frontend (REST API direto)
-      if (window.supabaseApp) {
-        try {
-          await supabaseApp.updatePassword(newPassword);
-          updated = true;
-        } catch (clientErr) {
-          console.warn('Falha client Supabase:', clientErr.message);
-          lastError = clientErr.message;
-          // Se o token expirou, não tenta o fallback — só vai falhar também
-          const msg = clientErr.message.toLowerCase();
-          if (msg.includes('jwt expired') || msg.includes('bad_jwt') || msg.includes('invalid jwt') || msg.includes('token') || msg.includes('expirado')) {
-            throw new Error('O link de recuperação expirou. Por favor, solicite um novo link clicando em "Esqueci minha senha".');
-          }
-        }
-      }
-
-      // 2. Se não atualizou pelo client, chamar endpoint backend passando o token de acesso
-      if (!updated) {
+      // 1. Tentar primeiro via Backend Admin API (método seguro com garantia de persistência no Supabase)
+      try {
+        console.log('[Auth] Tentando atualizar senha via Backend Admin API...');
         const res = await fetch('/api/auth/reset-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ newPassword, accessToken: token })
         });
         const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || lastError || 'Erro ao atualizar senha.');
+        if (res.ok) {
+          console.log('[Auth] ✓ Senha atualizada com sucesso via Admin API backend!');
+          updated = true;
+        } else {
+          console.warn('[Auth] Backend retornou erro:', data.error);
+          lastError = data.error;
+          if (res.status === 401 || (data.error && data.error.includes('expirado'))) {
+            throw new Error(data.error);
+          }
         }
+      } catch (backendErr) {
+        if (backendErr.message && backendErr.message.includes('expirado')) {
+          throw backendErr;
+        }
+        console.warn('[Auth] Falha no backend Admin API, tentando fallback client...', backendErr.message);
+        lastError = backendErr.message;
+      }
+
+      // 2. Fallback: Tentar diretamente pelo client Supabase no frontend caso backend não tenha respondido
+      if (!updated && window.supabaseApp) {
+        try {
+          console.log('[Auth] Tentando fallback client Supabase...');
+          await supabaseApp.updatePassword(newPassword);
+          updated = true;
+        } catch (clientErr) {
+          console.warn('[Auth] Falha client Supabase fallback:', clientErr.message);
+          throw new Error(clientErr.message || lastError || 'Erro ao atualizar senha.');
+        }
+      }
+
+      if (!updated) {
+        throw new Error(lastError || 'Não foi possível atualizar a senha. Tente novamente.');
       }
 
       // Limpar tokens de recuperação após sucesso
