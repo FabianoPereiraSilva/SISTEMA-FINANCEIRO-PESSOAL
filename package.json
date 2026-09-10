@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build",
     "start": "node server.js",
     "dev": "node server.js",
     "test": "node test/isolation_test.js"

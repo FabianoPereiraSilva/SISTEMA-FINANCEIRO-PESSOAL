@@ -1,0 +1,203 @@
+/* Steep Theme & 3D Editorial Design System */
+:root {
+  /* Steep Theme Palette (Light Editorial) */
+  --color-ink-black: #17191c;
+  --color-paper-white: #ffffff;
+  --color-mist-gray: #f2f2f3;
+  --color-fog-white: #fafafb;
+  --color-slate-gray: #777b86;
+  --color-ash-gray: #979799;
+  --color-smoke-gray: #a3a6af;
+  --color-blush-peach: #fbe1d1;
+  --color-sienna-brown: #5d2a1a;
+  --color-sienna-light: #8d442d;
+  --color-border-hairline: #e6e6e8;
+  --color-success: #15803d;
+  --color-success-bg: #f0fdf4;
+  --color-danger: #b91c1c;
+  --color-danger-bg: #fef2f2;
+
+  /* Typography */
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Surfaces & Backgrounds */
+  --bg-app: #fafafb;
+  --bg-card: #ffffff;
+  --bg-card-secondary: #f2f2f3;
+  --bg-card-elevated: #ffffff;
+  --border-color: #e6e6e8;
+  --text-primary: #17191c;
+  --text-secondary: #777b86;
+  --text-muted: #979799;
+
+  /* 3D Depth Shadows */
+  --shadow-3d-button: 0 6px 0 #0d0f11, 0 10px 20px rgba(23, 25, 28, 0.25);
+  --shadow-3d-button-active: 0 2px 0 #0d0f11, 0 4px 8px rgba(23, 25, 28, 0.2);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-card-elevated: 0 12px 32px -4px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
+  --shadow-floating: 0 20px 40px -8px rgba(23, 25, 28, 0.15);
+
+  /* Radius */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+}
+
+[data-theme="dark"] {
+  --color-ink-black: #f0f0f3;
+  --color-paper-white: #16181d;
+  --color-mist-gray: #1e2127;
+  --color-fog-white: #0e1013;
+  --color-slate-gray: #9ca0ab;
+  --color-ash-gray: #6b707d;
+  --color-smoke-gray: #4b5160;
+  --color-blush-peach: rgba(232, 141, 116, 0.2);
+  --color-sienna-brown: #e88d74;
+  --color-sienna-light: #f3a894;
+  --color-border-hairline: rgba(255, 255, 255, 0.08);
+  --color-success: #34d399;
+  --color-success-bg: rgba(52, 211, 153, 0.1);
+  --color-danger: #f87171;
+  --color-danger-bg: rgba(248, 113, 113, 0.1);
+
+  --bg-app: #0a0b0d;
+  --bg-card: #14161b;
+  --bg-card-secondary: #1a1d24;
+  --bg-card-elevated: #1f232b;
+  --border-color: rgba(255, 255, 255, 0.09);
+  --text-primary: #f0f0f3;
+  --text-secondary: #9ca0ab;
+  --text-muted: #6b707d;
+
+  --shadow-3d-button: 0 6px 0 #000000, 0 10px 25px rgba(0, 0, 0, 0.6);
+  --shadow-3d-button-active: 0 2px 0 #000000, 0 4px 10px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-card-elevated: 0 12px 32px -4px rgba(0, 0, 0, 0.4);
+  --shadow-floating: 0 20px 40px -8px rgba(0, 0, 0, 0.7);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Serif headings */
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.serif-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-hairline);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-slate-gray);
+}
+
+/* Mobile Safe Areas */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 3D Glass & Depth Utility Classes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-hairline);
+}
+
+[data-theme="dark"] .glass-panel {
+  background: rgba(20, 22, 27, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 3D Interactive Card */
+.card-3d {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card-3d:hover {
+  box-shadow: var(--shadow-card-elevated);
+}
+
+/* Input Fields */
+.steep-input {
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 15px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-card-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.steep-input:focus {
+  border-color: var(--color-sienna-brown);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 4px var(--color-blush-peach);
+}
+
+/* Pulsing Badge & Shimmer */
+@keyframes shimmerSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  animation: shimmerSweep 3s infinite;
+}

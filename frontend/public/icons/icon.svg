@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="finplan-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#24272c" />
+      <stop offset="100%" stop-color="#111215" />
+    </linearGradient>
+    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffeedd" />
+      <stop offset="100%" stop-color="#fedac2" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#finplan-grad)" />
+  <circle cx="256" cy="256" r="210" stroke="rgba(255,255,255,0.08)" stroke-width="2" fill="none" />
+  <text x="256" y="325" font-family="'Newsreader', 'Playfair Display', Georgia, serif" font-size="210" font-weight="600" font-style="italic" fill="url(#accent-grad)" text-anchor="middle">FP</text>
+  <circle cx="390" cy="150" r="18" fill="#5d2a1a" />
+  <circle cx="390" cy="150" r="8" fill="#fedac2" />
+</svg>
