@@ -239,11 +239,20 @@ router.post('/reset-password', async (req, res) => {
 
     if (supabaseUrl && supabaseAnonKey && accessToken) {
       try {
-        const { createClient } = require('@supabase/supabase-js');
-        const supa = createClient(supabaseUrl, supabaseAnonKey);
-        await supa.auth.setSession({ access_token: accessToken, refresh_token: '' });
-        const { data, error } = await supa.auth.updateUser({ password: newPassword });
-        if (error) throw error;
+        const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+          method: 'PUT',
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ password: newPassword })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.msg || data.error_description || data.error || 'Erro ao atualizar senha.');
+        }
         return res.json({ message: 'Senha atualizada com sucesso no Supabase.' });
       } catch (supaErr) {
         console.warn('Erro ao atualizar senha via Supabase backend:', supaErr.message);

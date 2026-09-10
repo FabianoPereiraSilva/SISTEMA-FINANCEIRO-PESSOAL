@@ -83,33 +83,57 @@ const supabaseApp = {
   },
 
   async updatePassword(newPassword) {
-    if (!this.client) {
-      await this.init();
+    // 1. Obter o token de recuperação da URL, window ou sessionStorage
+    let token = window.__recoveryToken || sessionStorage.getItem('financeplan_recovery_token');
+    if (!token && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      token = hashParams.get('access_token');
     }
-    if (!this.client) throw new Error('Supabase não inicializado.');
 
-    // Injeta o access_token do hash se existir para reestabelecer a sessão
+    // 2. Obter configuração do Supabase (com fallback resiliente para o projeto)
+    let url = 'https://ajkaiffhcmygofkvzxmw.supabase.co';
+    let key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqa2FpZmZoY215Z29ma3Z6eG13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTc5ODYsImV4cCI6MjEwNDUzMzk4Nn0.0nPbkzomQd57zl9X_tDLvHDlzDt6_LGgdGrpHg_0-Bk';
     try {
-      const hashStr = (window.location.hash || '').substring(1);
-      const hashParams = new URLSearchParams(hashStr);
-      const token = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
-
-      if (token) {
-        await this.client.auth.setSession({
-          access_token: token,
-          refresh_token: refreshToken || ''
-        });
-      }
+      const cfgRes = await fetch('/api/config');
+      const cfg = await cfgRes.json();
+      if (cfg.supabaseUrl) url = cfg.supabaseUrl;
+      if (cfg.supabaseAnonKey) key = cfg.supabaseAnonKey;
     } catch (e) {
-      console.warn('Sessão mantida:', e);
+      console.warn('Falha ao carregar config:', e);
     }
 
-    const { data, error } = await this.client.auth.updateUser({
-      password: newPassword
-    });
-    if (error) throw error;
-    return data;
+    // 3. Se temos o token de autorização e as chaves, chamar diretamente a API REST do Supabase (livre de AuthSessionMissingError)
+    if (token && url && key) {
+      console.log('[Supabase Auth] Atualizando senha via API REST oficial...');
+      const response = await fetch(`${url}/auth/v1/user`, {
+        method: 'PUT',
+        headers: {
+          'apikey': key,
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ password: newPassword })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.msg || data.error_description || data.error || 'Erro ao atualizar senha no Supabase.');
+      }
+
+      console.log('[Supabase Auth] ✓ Senha atualizada com sucesso via REST API!');
+      return data;
+    }
+
+    // 4. Fallback via cliente SDK
+    if (this.client) {
+      const { data, error } = await this.client.auth.updateUser({
+        password: newPassword
+      });
+      if (error) throw error;
+      return data;
+    }
+
+    throw new Error('Token de acesso não encontrado. Por favor, abra o link de recuperação novamente.');
   },
 
   async logout() {

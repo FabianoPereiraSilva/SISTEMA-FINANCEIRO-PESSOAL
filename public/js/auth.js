@@ -323,7 +323,7 @@ const auth = {
     try {
       const hashStr = (window.location.hash || '').substring(1);
       const hashParams = new URLSearchParams(hashStr);
-      const token = hashParams.get('access_token');
+      const token = window.__recoveryToken || sessionStorage.getItem('financeplan_recovery_token') || hashParams.get('access_token');
 
       let updated = false;
       let lastError = null;

@@ -30,7 +30,16 @@
     (function() {
       try {
         var h = window.location.hash || '';
-        if (h.indexOf('type=recovery') !== -1 || h.indexOf('recovery') !== -1) {
+        if (h.indexOf('access_token=') !== -1) {
+          var params = new URLSearchParams(h.substring(1));
+          var token = params.get('access_token');
+          if (token) {
+            window.__recoveryToken = token;
+            sessionStorage.setItem('financeplan_recovery_token', token);
+            console.log('[Head Guard] ✓ Recovery token capturado e protegido.');
+          }
+        }
+        if (h.indexOf('type=recovery') !== -1 || h.indexOf('recovery') !== -1 || window.__recoveryToken) {
           window.__isPasswordRecovery = true;
           sessionStorage.setItem('financeplan_recovery_mode', 'true');
           console.log('[Head Guard] Modo de recuperação de senha identificado na URL.');
@@ -708,7 +717,7 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Supabase JS Client v2 (bundle UMD local) -->
-  <script src="js/supabase.min.js?v=2.2"></script>
+  <script src="js/supabase.min.js?v=2.3"></script>
   <script>
     (function() {
       var lib = window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
@@ -720,15 +729,15 @@
       }
     })();
   </script>
-  <script src="js/supabaseClient.js?v=2.2"></script>
+  <script src="js/supabaseClient.js?v=2.3"></script>
 
   <!-- Scripts da Aplicação -->
-  <script src="js/api.js?v=2.2"></script>
-  <script src="js/bankParser.js?v=2.2"></script>
-  <script src="js/auth.js?v=2.2"></script>
-  <script src="js/dashboard.js?v=2.2"></script>
-  <script src="js/transactions.js?v=2.2"></script>
-  <script src="js/budgets.js?v=2.2"></script>
-  <script src="js/app.js?v=2.2"></script>
+  <script src="js/api.js?v=2.3"></script>
+  <script src="js/bankParser.js?v=2.3"></script>
+  <script src="js/auth.js?v=2.3"></script>
+  <script src="js/dashboard.js?v=2.3"></script>
+  <script src="js/transactions.js?v=2.3"></script>
+  <script src="js/budgets.js?v=2.3"></script>
+  <script src="js/app.js?v=2.3"></script>
 </body>
 </html>
