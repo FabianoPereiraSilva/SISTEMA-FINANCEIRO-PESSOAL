@@ -144,7 +144,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// ─── Login (backend local, fallback sem Supabase) ───
+// ─── Login (Supabase-first, SQLite como fallback secundário) ───
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -153,6 +153,47 @@ router.post('/login', async (req, res) => {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
+
+    // ── Tentar login via Supabase primeiro (método primário) ──
+    const supabaseUrl = process.env.SUPABASE_URL || 'https://ajkaiffhcmygofkvzxmw.supabase.co';
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqa2FpZmZoY215Z29ma3Z6eG13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTc5ODYsImV4cCI6MjEwNDUzMzk4Nn0.0nPbkzomQd57zl9X_tDLvHDlzDt6_LGgdGrpHg_0-Bk';
+
+    try {
+      const { createClient } = require('@supabase/supabase-js');
+      const supaClient = createClient(supabaseUrl, supabaseAnonKey);
+      const { data: supaData, error: supaError } = await supaClient.auth.signInWithPassword({
+        email: trimmedEmail,
+        password
+      });
+
+      if (!supaError && supaData && supaData.user) {
+        const userId = supaData.user.id;
+        const userName = supaData.user.user_metadata?.name || trimmedEmail.split('@')[0];
+        const supaToken = supaData.session.access_token;
+
+        // Semear categorias padrão se necessário
+        try {
+          await dataService.seedDefaultCategories(userId, supaToken);
+        } catch (e) {
+          // Ignora erro de categorias, não bloqueia o login
+        }
+
+        // Gerar token JWT local para compatibilidade com o sistema
+        const localToken = generateToken({ id: userId, name: userName, email: trimmedEmail });
+        console.log(`[Login] Supabase OK para: ${trimmedEmail}`);
+        return res.json({
+          message: 'Autenticado com sucesso!',
+          token: localToken,
+          supabaseToken: supaToken,
+          user: { id: userId, name: userName, email: trimmedEmail },
+          provider: 'supabase'
+        });
+      }
+    } catch (supaErr) {
+      console.warn('[Login] Falha no login Supabase, tentando SQLite:', supaErr.message);
+    }
+
+    // ── Fallback: SQLite local (para usuários sem Supabase) ──
     const user = await getAsync('SELECT * FROM users WHERE email = ?', [trimmedEmail]);
 
     if (!user) {
@@ -165,6 +206,7 @@ router.post('/login', async (req, res) => {
     }
 
     const token = generateToken({ id: user.id, name: user.name, email: user.email });
+    console.log(`[Login] SQLite OK para: ${trimmedEmail}`);
     return res.json({
       message: 'Autenticado com sucesso!',
       token,
@@ -175,6 +217,7 @@ router.post('/login', async (req, res) => {
     return res.status(500).json({ error: 'Erro interno no servidor ao autenticar.' });
   }
 });
+
 
 // ─── Perfil atual ───
 router.get('/me', requireAuth, async (req, res) => {
