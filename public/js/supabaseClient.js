@@ -2,6 +2,7 @@
 const supabaseApp = {
   client: null,
   isConfigured: false,
+  recoverySession: null, // Sessão capturada no evento PASSWORD_RECOVERY
 
   async init() {
     try {
@@ -20,7 +21,14 @@ const supabaseApp = {
         // Escutar recuperação de senha e eventos de auth
         this.client.auth.onAuthStateChange(async (event, session) => {
           if (event === 'PASSWORD_RECOVERY') {
-            console.log('Evento Supabase PASSWORD_RECOVERY capturado.');
+            console.log('[Supabase] PASSWORD_RECOVERY capturado. Sessão:', session ? 'OK' : 'NULL');
+            // Salvar a sessão gerada pelo SDK no evento de recovery — é o token correto para updateUser
+            this.recoverySession = session;
+            if (session && session.access_token) {
+              window.__recoveryToken = session.access_token;
+              sessionStorage.setItem('financeplan_recovery_token', session.access_token);
+              console.log('[Supabase] Token de recovery salvo da sessão do SDK (método confiável).');
+            }
             if (window.auth && auth.openUpdatePasswordModal) {
               auth.openUpdatePasswordModal();
             }
@@ -83,14 +91,43 @@ const supabaseApp = {
   },
 
   async updatePassword(newPassword) {
-    // 1. Obter o token de recuperação da URL, window ou sessionStorage
-    let token = window.__recoveryToken || sessionStorage.getItem('financeplan_recovery_token');
-    if (!token && window.location.hash) {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      token = hashParams.get('access_token');
+    // Estratégia 1: Usar a sessão capturada no evento PASSWORD_RECOVERY (mais confiável)
+    if (this.recoverySession && this.client) {
+      console.log('[Supabase Auth] Usando sessão do evento PASSWORD_RECOVERY (método oficial SDK)...');
+      try {
+        // Restaurar a sessão no cliente SDK
+        await this.client.auth.setSession({
+          access_token: this.recoverySession.access_token,
+          refresh_token: this.recoverySession.refresh_token
+        });
+        const { data, error } = await this.client.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        console.log('[Supabase Auth] ✓ Senha atualizada via SDK (PASSWORD_RECOVERY session)!');
+        this.recoverySession = null; // limpar após uso
+        return data;
+      } catch (sdkErr) {
+        console.warn('[Supabase Auth] Falha via SDK recovery session:', sdkErr.message);
+        // Continuar para próximo método
+      }
     }
 
-    // 2. Obter configuração do Supabase (com fallback resiliente para o projeto)
+    // Estratégia 2: Obter token guardado (do head guard ou sessionStorage)
+    let token = window.__recoveryToken || sessionStorage.getItem('financeplan_recovery_token');
+
+    // Estratégia 3: Tentar pegar da sessão ativa do SDK
+    if (!token && this.client) {
+      try {
+        const { data: { session } } = await this.client.auth.getSession();
+        if (session && session.access_token) {
+          token = session.access_token;
+          console.log('[Supabase Auth] Token obtido da sessão ativa do SDK.');
+        }
+      } catch (e) {
+        console.warn('[Supabase Auth] Não foi possível obter sessão ativa:', e.message);
+      }
+    }
+
+    // Obter configuração do Supabase (com fallback resiliente para o projeto)
     let url = 'https://ajkaiffhcmygofkvzxmw.supabase.co';
     let key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqa2FpZmZoY215Z29ma3Z6eG13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTc5ODYsImV4cCI6MjEwNDUzMzk4Nn0.0nPbkzomQd57zl9X_tDLvHDlzDt6_LGgdGrpHg_0-Bk';
     try {
@@ -102,7 +139,7 @@ const supabaseApp = {
       console.warn('Falha ao carregar config:', e);
     }
 
-    // 3. Chamar diretamente a API REST oficial do Supabase (/auth/v1/user) com o Bearer token
+    // Estratégia 4: Chamar diretamente a API REST com o token disponível
     if (token && url && key) {
       console.log('[Supabase Auth] Atualizando senha via API REST oficial...');
       let response;
@@ -123,7 +160,6 @@ const supabaseApp = {
       const data = await response.json();
 
       if (!response.ok) {
-        // Erros: 403 bad_jwt (token expirado), 422 (senha fraca), etc.
         const errorMsg = data.msg || data.error_description || data.error || 'Erro ao atualizar senha no Supabase.';
         console.error('[Supabase Auth] Erro HTTP', response.status, ':', errorMsg);
         throw new Error(errorMsg);
@@ -139,7 +175,7 @@ const supabaseApp = {
       return data;
     }
 
-    // 4. Fallback via cliente SDK
+    // Estratégia 5: Fallback via cliente SDK com sessão atual
     if (this.client) {
       const { data, error } = await this.client.auth.updateUser({
         password: newPassword
